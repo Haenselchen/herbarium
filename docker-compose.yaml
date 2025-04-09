@@ -1,0 +1,72 @@
+services:
+  # MariaDB Datenbank Service
+  database:
+    image: mariadb:10.5
+    container_name: herbarium_db
+    restart: always
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"                                    # Verwendung der Umgebungsvariable für Port (Standard 3306)
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./db_init:/docker-entrypoint-initdb.d
+    env_file:
+      - ./.env                                                        # Alle Umgebungsvariablen, wie Passwörter, hier definieren
+    environment:
+      MARIADB_ROOT_PASSWORD: "${MARIADB_ROOT_PASSWORD}"
+      MARIADB_DATABASE: "${MARIADB_DATABASE}"
+      MARIADB_USER: "${MARIADB_USER}"
+      MARIADB_PASSWORD: "${MARIADB_PASSWORD}"
+    networks:
+      - herbarium_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MARIADB_ROOT_PASSWORD}"]
+      interval: 30s
+      retries: 5
+      start_period: 10s
+      timeout: 10s
+
+  # Apache und PHP Service
+  webserver:
+    build: .                                                          # Verwendet Dockerfile für die Anpassung wie PDO
+    image: php:8.4-apache
+    container_name: herbarium_webserver
+    ports:
+      - "${WEB_PORT:-8080}:80"                                        # Verwendung der Umgebungsvariable für Port (Standard 8080)
+    volumes:
+      - ./src:/var/www/html
+      - ./config:/var/www/config
+    depends_on:
+      - database
+    networks:
+      - herbarium_network
+    environment:
+      - PHP_MEMORY_LIMIT=${PHP_MEMORY_LIMIT:-256M}                    # Beispiel: Anpassung der PHP-Umgebungsvariablen
+    restart: always
+
+  # phpMyAdmin für Datenbankverwaltung
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: herbarium_phpmyadmin
+    ports:
+      - "${PHPMYADMIN_PORT:-8081}:80"                                  # Verwendung der Umgebungsvariable für Port (Standard 8081)
+    env_file:
+      - ./.env
+    environment:
+      PMA_HOST: herbarium_db
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+    depends_on:
+      - database
+    networks:
+      - herbarium_network
+#    volumes:
+#      - phpmyadmin_data:/sessions
+
+networks:
+  herbarium_network:
+    driver: bridge
+
+volumes:
+  mariadb_data:
+  phpmyadmin_data:

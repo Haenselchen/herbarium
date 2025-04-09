@@ -1,0 +1,7 @@
+<?php
+return [
+    'host' => 'herbarium_db',  // Docker-Container-Name
+    'db'   => 'herbarium',
+    'user' => 'your_username',
+    'pass' => 'your_password',
+];

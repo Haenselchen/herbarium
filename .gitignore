@@ -1,0 +1,17 @@
+# Sensible Konfigurationsdateien
+.env
+config/config.php
+
+# Uploads/Bilder
+src/images/*
+!src/images/.gitkeep
+
+# PHP-Dateien
+# info.php
+
+# Lokale Datenbank-Dateien
+db_data/
+
+# Docker-Volumes
+mariadb_data/
+phpmyadmin_data/
