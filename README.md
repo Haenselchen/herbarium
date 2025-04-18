@@ -79,5 +79,3 @@ herbarium/
 - Die Dateien .env und config/config.php niemals öffentlich hochladen
 
 - Für produktive Umgebungen sollten zusätzliche Sicherheitsmaßnahmen implementiert werden (z. B. HTTPS, Zugriffsbeschränkungen, regelmäßige Updates)
-
-
